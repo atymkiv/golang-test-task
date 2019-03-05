@@ -14,7 +14,10 @@ func TestMakeRand(t *testing.T) {
 		t.Error("Expected new io.Reader object after calling MakeRand, not nil")
 	}
 		var object MyObject
-		err := obj.Decode(&object)
-
+		decoder := json.NewDecoder(obj)
+		err := decoder.Decode(&object)
+		if err != nil {
+			panic(err)
+		}
 		fmt.Printf("Word is %s, Number is %d\n", object.Word, object.Number)
 }
