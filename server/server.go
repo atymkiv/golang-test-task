@@ -1,4 +1,4 @@
-package main 
+cdpackage main 
 
 import (
 	"net/http" 
@@ -20,7 +20,6 @@ func Receive(w http.ResponseWriter, r *http.Request) {
 	}
 	decoder := json.NewDecoder(r.Body)
 	var object MyObject
-	//err := json.NewDecoder(io.LimitReader(r.Body, 10)).Decode(&object)
 	err := decoder.Decode(&object)
 	if err != nil {
 		panic(err)

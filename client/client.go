@@ -2,28 +2,40 @@ package main
 
 import (
 	"fmt"
-	"bytes"
+
 	"net/http"
-	"encoding/json"
-	"io"
 	"math/rand"
 	"os"
 	"strconv"
 )
 
-func MakeRand() io.Reader{
-	var object MyObject
+func MakeRandJSON(max int) <-chan MyObject{
+	outChJson := make(chan MyObject, max)
+	
+	go func() {
+		for i := 1; i <= max; i++ {
+			var object MyObject
+			var arr []byte
+			for j := 0; j < rand.Intn(50); j++ { 
+				arr = append(arr, byte(rand.Intn(122-65)+65)) //generating random words of random chars and length
+			}
 
-	var arr []byte
-	for i := 0; i < rand.Intn(50); i++ {
-		arr = append(arr, byte(rand.Intn(122-65)+65))
-	}
-	object.Word = string(arr)
-	object.Number = rand.Intn(100000)
-	oJson, _ := json.Marshal(object)
-	r := bytes.NewReader(oJson)
-	return r
+			object.Word = string(arr)
+			object.Number = rand.Intn(100000)
+
+			outChJson <- object
+		}
+
+		close(outChJson)
+	}()
+
+	return outChJson
 }
+	
+	//oJson, _ := json.Marshal(object)
+	//r := bytes.NewReader(oJson)
+	//return r
+
 
 type MyObject struct {
 	Word string		`json:"string"`
@@ -31,7 +43,7 @@ type MyObject struct {
 }
 
 func Post() {
-	r := MakeRand()
+	r := MakeRandJSON()
 	resp, err := http.Post("http://localhost:9000/", "application/json", r)
 	fmt.Printf("%v %v\n", err, resp)
 }
