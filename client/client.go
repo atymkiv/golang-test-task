@@ -1,13 +1,16 @@
 package main
 
 import (
-	"fmt"
-
-	"net/http"
+	
 	"math/rand"
+	"encoding/json"
+	"bytes"
+	"io"
+	/*"net/http"
+	"fmt"
 	"os"
 	"strconv"
-)
+*/)
 
 func MakeRandJSON(max int) <-chan MyObject{
 	outChJson := make(chan MyObject, max)
@@ -32,17 +35,26 @@ func MakeRandJSON(max int) <-chan MyObject{
 	return outChJson
 }
 	
-	//oJson, _ := json.Marshal(object)
-	//r := bytes.NewReader(oJson)
-	//return r
-
+func JsonToReader(in <-chan MyObject) <-chan io.Reader {
+	out := make(chan io.Reader, 100)
+	go func(){
+		for object := range in{
+			oJson, _ := json.Marshal(object)
+			r := bytes.NewReader(oJson)
+			out <- r
+		}
+		close(out)	
+	}()
+	return out
+}
+	
 
 type MyObject struct {
 	Word string		`json:"string"`
 	Number int		`json:"number"`
 }
 
-func Post() {
+/*func Post() {
 	r := MakeRandJSON()
 	resp, err := http.Post("http://localhost:9000/", "application/json", r)
 	fmt.Printf("%v %v\n", err, resp)
@@ -57,3 +69,4 @@ func main() {
     fmt.Scanln(&input)
 
 }
+*/
