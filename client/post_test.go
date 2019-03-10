@@ -12,11 +12,6 @@ func TestMakeRandJSON(t *testing.T) {
 		//Test of creation
 		t.Error("Expected new channel object after calling MakeRandJSON, not nil")
 	}
-	
-	if JsonCh == nil{
-		//Test of creation
-		t.Error("Expected new channel object after calling MakeRandJSON, not nil")
-	}
 
 		for object := range JsonCh {
 			var ob interface{} = object 
@@ -24,8 +19,7 @@ func TestMakeRandJSON(t *testing.T) {
 			if !ok {
 				t.Error("Expected channel of MyObjects")
 		}
-	}	
-		
+	}			
 }
 
 func TestJsonToReader(t *testing.T) {

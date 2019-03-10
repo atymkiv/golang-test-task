@@ -1,4 +1,4 @@
-cdpackage main 
+package main 
 
 import (
 	"net/http" 

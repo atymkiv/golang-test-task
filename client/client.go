@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"bytes"
 	"io"
-	/*"net/http"
+	"net/http"
 	"fmt"
 	"os"
 	"strconv"
-*/)
+)
 
 func MakeRandJSON(max int) <-chan MyObject{
 	outChJson := make(chan MyObject, max)
@@ -54,19 +54,25 @@ type MyObject struct {
 	Number int		`json:"number"`
 }
 
-/*func Post() {
-	r := MakeRandJSON()
-	resp, err := http.Post("http://localhost:9000/", "application/json", r)
-	fmt.Printf("%v %v\n", err, resp)
+func Post(in <-chan io.Reader) error{
+	
+	go func(){
+		for object := range in {
+			_, err := http.Post("http://localhost:9000/", "application/json", object)
+			if err != nil{
+				fmt.Println(err)
+				
+			}
+		}
+	}()
+	return nil 
 }
 
 func main() {
 	length, _ := strconv.Atoi(os.Args[1])
-	for i := 0; i<length; i++{
-        go Post()
-    }
+	Post(JsonToReader(MakeRandJSON(length)))
+
     var input string
     fmt.Scanln(&input)
 
 }
-*/
