@@ -10,17 +10,20 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	
 )
 
-func MakeRandJSON(max int) <-chan MyObject{
+func MakeRandObj(max int) <-chan MyObject{
 	outChJson := make(chan MyObject, max)
 	
 	go func() {
 		for i := 1; i <= max; i++ {
 			var object MyObject
 			var arr []byte
-			for j := 0; j < rand.Intn(50); j++ { 
-				arr = append(arr, byte(rand.Intn(122-65)+65)) //generating random words of random chars and length
+
+			//generating random words of random chars and length
+			for j := 0; j < rand.Intn(50); j++ {  //rand length
+				arr = append(arr, byte(rand.Intn(122-65)+65)) //rand chars 
 			}
 
 			object.Word = string(arr)
@@ -35,19 +38,29 @@ func MakeRandJSON(max int) <-chan MyObject{
 	return outChJson
 }
 	
-func JsonToReader(in <-chan MyObject) <-chan io.Reader {
-	out := make(chan io.Reader, 100)
+func ObjToJson(in <-chan MyObject) <-chan []byte {
+	out := make(chan []byte, 100)
 	go func(){
 		for object := range in{
 			oJson, _ := json.Marshal(object)
-			r := bytes.NewReader(oJson)
-			out <- r
+			out <- oJson
 		}
 		close(out)	
 	}()
 	return out
 }
-	
+
+func JsonToReader(in <-chan []byte) <-chan io.Reader {
+	out := make(chan io.Reader, 100)
+	go func(){
+		for oJson := range in{
+			r := bytes.NewReader(oJson)
+			out <- r
+		}
+		close(out)	
+	}()
+	return out		
+}
 
 type MyObject struct {
 	Word string		`json:"string"`
@@ -55,10 +68,11 @@ type MyObject struct {
 }
 
 func Post(in <-chan io.Reader) error{
-	
 	go func(){
 		for object := range in {
-			_, err := http.Post("http://localhost:9000/", "application/json", object)
+			res, err := http.Post("http://localhost:9000/", "application/json", object)
+			defer res.Body.Close()
+			
 			if err != nil{
 				fmt.Println(err)
 				
@@ -70,8 +84,7 @@ func Post(in <-chan io.Reader) error{
 
 func main() {
 	length, _ := strconv.Atoi(os.Args[1])
-	Post(JsonToReader(MakeRandJSON(length)))
-
+	Post(JsonToReader(ObjToJson(MakeRandObj(length))))
     var input string
     fmt.Scanln(&input)
 
