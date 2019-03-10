@@ -35,6 +35,18 @@ func TestJsonToReader(t *testing.T) {
 			t.Error("Expected channel of io.Reader objects")
 		}
 	}
-	
-} 
+}
+
+func benchmarkPost(i int, b *testing.B) {
+	for n := 0; n < b.N; n++ {
+		Post(JsonToReader(MakeRandJSON(i)))
+	}
+}
+
+func BenchmarkPost10(b *testing.B) { benchmarkPost(10, b) } 
+func BenchmarkPost100(b *testing.B) { benchmarkPost(100, b) }
+func BenchmarkPost1000(b *testing.B) { benchmarkPost(1000, b) }
+func BenchmarkPost10000(b *testing.B) { benchmarkPost(10000, b) }
+func BenchmarkPost100000(b *testing.B) { benchmarkPost(100000, b) }
+func BenchmarkPost1000000(b *testing.B) { benchmarkPost(1000000, b) }
 		
