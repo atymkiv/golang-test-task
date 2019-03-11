@@ -70,8 +70,7 @@ type MyObject struct {
 func Post(in <-chan io.Reader) error{
 	go func(){
 		for object := range in {
-			res, err := http.Post("http://localhost:9000/", "application/json", object)
-			defer res.Body.Close()
+			_, err := http.Post("http://localhost:9000/", "application/json", object)
 			
 			if err != nil{
 				fmt.Println(err)
