@@ -2,23 +2,16 @@ package main
 
 import (
 	
-	"math/rand"
-	"encoding/json"
-	"bytes"
-	"io"
-	"net/http"
-	"fmt"
+	"sync"
 	"os"
 	"strconv"
+	"math/rand"
 	
+	pool "github.com/atymkiv/golang-test-task/client/workerPool"
 )
 
-func MakeRandObj(max int) <-chan MyObject{
-	outChJson := make(chan MyObject, max)
-	
-	go func() {
-		for i := 1; i <= max; i++ {
-			var object MyObject
+func NewRequest(wg *sync.WaitGroup) pool.Request {
+			var myRequest pool.Request
 			var arr []byte
 
 			//generating random words of random chars and length
@@ -26,65 +19,36 @@ func MakeRandObj(max int) <-chan MyObject{
 				arr = append(arr, byte(rand.Intn(122-65)+65)) //rand chars 
 			}
 
-			object.Word = string(arr)
-			object.Number = rand.Intn(100000)
+			myRequest.Word = string(arr)
+			myRequest.Number = rand.Intn(100000)
 
-			outChJson <- object
-		}
+	return myRequest
+}	
 
-		close(outChJson)
-	}()
-
-	return outChJson
-}
-	
-func ObjToJson(in <-chan MyObject) <-chan []byte {
-	out := make(chan []byte, 100)
-	go func(){
-		for object := range in{
-			oJson, _ := json.Marshal(object)
-			out <- oJson
-		}
-		close(out)	
-	}()
-	return out
-}
-
-func JsonToReader(in <-chan []byte) <-chan io.Reader {
-	out := make(chan io.Reader, 100)
-	go func(){
-		for oJson := range in{
-			r := bytes.NewReader(oJson)
-			out <- r
-		}
-		close(out)	
-	}()
-	return out		
-}
-
-type MyObject struct {
-	Word string		`json:"string"`
-	Number int		`json:"number"`
-}
-
-func Post(in <-chan io.Reader) error{
-	go func(){
-		for object := range in {
-			_, err := http.Post("http://localhost:9000/", "application/json", object)
-			
-			if err != nil{
-				fmt.Println(err)
-				
-			}
-		}
-	}()
-	return nil 
-}
 
 func main() {
-	length, _ := strconv.Atoi(os.Args[1])
-	Post(JsonToReader(ObjToJson(MakeRandObj(length))))
-    var input string
-    fmt.Scanln(&input)
+	
+	bufferSize := 100
+	var dispatcher pool.Dispatcher = pool.NewDispatcher(bufferSize)
 
+	workers := 3
+	for i := 0; i < workers; i++ {
+		var w pool.WorkerLauncher = &pool.PostWorker{
+		}
+		dispatcher.LaunchWorker(w)
+	}
+
+	requests, _ := strconv.Atoi(os.Args[1])
+
+	var wg sync.WaitGroup
+	wg.Add(requests-1)
+
+	for i := 0; i < requests; i++ {
+		req := NewRequest(&wg)
+		dispatcher.MakeRequest(req)
+	}
+
+	dispatcher.Stop()
+
+	wg.Wait()
 }
