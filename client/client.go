@@ -1,8 +1,8 @@
 package main
 
 import (
-	
-	"sync"
+	"fmt"
+	//"sync"
 	"os"
 	"strconv"
 	"math/rand"
@@ -10,7 +10,7 @@ import (
 	pool "github.com/atymkiv/golang-test-task/client/workerPool"
 )
 
-func NewRequest(wg *sync.WaitGroup) pool.Request {
+func NewRequest() pool.Request {
 			var myRequest pool.Request
 			var arr []byte
 
@@ -40,15 +40,17 @@ func main() {
 
 	requests, _ := strconv.Atoi(os.Args[1])
 
-	var wg sync.WaitGroup
-	wg.Add(requests-1)
+	//var wg sync.WaitGroup
+	//wg.Add(requests)
 
 	for i := 0; i < requests; i++ {
-		req := NewRequest(&wg)
+		req := NewRequest()
 		dispatcher.MakeRequest(req)
 	}
 
 	dispatcher.Stop()
 
-	wg.Wait()
+	//wg.Wait()
+	var input string
+	fmt.Scanln(&input)
 }
