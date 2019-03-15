@@ -6,6 +6,9 @@ import (
 	"os"
 	"strconv"
 	"math/rand"
+	"log"
+	"runtime/pprof"
+	"flag"
 	
 	pool "github.com/atymkiv/golang-test-task/client/workerPool"
 )
@@ -26,8 +29,20 @@ func NewRequest() pool.Request {
 }	
 
 
+var cpuprofile = flag.String("cpuprofile", "", "write cpu profile to file")
+
 func main() {
-	
+
+	flag.Parse()
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	bufferSize := 100
 	var dispatcher pool.Dispatcher = pool.NewDispatcher(bufferSize)
 
