@@ -11,10 +11,11 @@ import (
 	
 )
 
-
+ 
 
 type WorkerLauncher interface {
 	LaunchWorker(in chan Request)
+
 }
 
 //develop pipeline
@@ -51,14 +52,15 @@ func JsonToReader(in <-chan []byte) <-chan io.Reader {
 
 
 func Post(in <-chan io.Reader) {
+	singletonCounter := GetInstance()
 	go func(){
 		for object := range in {
 			_, err := http.Post("http://localhost:9000/", "application/json", object)
 			
 			if err != nil {
-				fmt.Println(err)
-				
+				fmt.Println(err)	
 			}
+			singletonCounter.AddOne() //counter for singleton
 		}
 	}()
 }

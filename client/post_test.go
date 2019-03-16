@@ -91,5 +91,5 @@ func benchmarkPost(requests int, workers int, b *testing.B) {
 
 //func BenchmarkPost1000000_1worker(b *testing.B) { benchmarkPost(1000000, 1, b) }
 func BenchmarkPost1000000_2workers(b *testing.B) { benchmarkPost(1000000, 2, b) }		
-//func BenchmarkPost1000000_3workers(b *testing.B) { benchmarkPost(1000000, 3, b) }
-//func BenchmarkPost1000000_4workers(b *testing.B) { benchmarkPost(1000000, 4, b) }
+func BenchmarkPost1000000_3workers(b *testing.B) { benchmarkPost(1000000, 3, b) }
+func BenchmarkPost1000000_4workers(b *testing.B) { benchmarkPost(1000000, 4, b) }
